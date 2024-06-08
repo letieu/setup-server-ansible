@@ -1,0 +1,22 @@
+---
+- name: Install nginx proxy manager
+  hosts: default
+  become: true
+  tasks:
+    - name: Create nginx-proxy-manager folder
+      ansible.builtin.file:
+        path: /root/nginx-proxy-manager
+        state: directory
+    - name: Copy docker-compose file
+      ansible.builtin.template:
+        src: ./files/nginx-proxy-manager-compose.yaml
+        dest: /root/nginx-proxy-manager/docker-compose.yaml
+    - name: Start nginx proxy manager
+      community.general.docker_compose:
+        project_src: /root/nginx-proxy-manager
+        state: present
+        build: no
+        pull: yes
+        project_name: nginx-proxy-manager
+        files:
+          - /root/nginx-proxy-manager/docker-compose.yaml

@@ -1,0 +1,47 @@
+- name: Install mongodb
+  hosts: default
+  user: root
+  tasks:
+    - name: Install prerequisites
+      ansible.builtin.apt:
+        name: '{{ item }}'
+        state: present
+      with_items:
+        - software-properties-common
+        - gnupg
+        - apt-transport-https
+        - ca-certificates
+    - name: Add mongodb key
+      ansible.builtin.get_url:
+        url: https://www.mongodb.org/static/pgp/server-7.0.asc
+        dest: /usr/share/keyrings/mongodb-server-7.0.gpg
+        mode: u+rwx
+    - name: Create a list file for MongoDB
+      ansible.builtin.copy:
+        content: |
+          deb [ trusted=true arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse
+        dest: /etc/apt/sources.list.d/mongodb-org-7.0.list
+        mode: u+rwx
+    - name: Reload local package database
+      ansible.builtin.apt:
+        update_cache: true
+    - name: Install mongodb
+      ansible.builtin.apt:
+        name: mongodb-org
+        state: present
+        update_cache: true
+    - name: Start mongodb
+      ansible.builtin.systemd:
+        name: mongod
+        state: started
+    - name: Enable mongodb
+      ansible.builtin.systemd:
+        name: mongod
+        enabled: true
+    # FIXME: This is not working, and we need disable authentication due to need create a user after
+    # - name: Enable password authentication
+    #   ansible.builtin.replace:
+    #     path: /etc/mongod.conf
+    #     regexp: '^#security:'
+    #     replace: 'security:'
+    #   notify: restart mongod

@@ -1,0 +1,3 @@
+[default]
+hostabc.co ansible_user=root
+

@@ -1,0 +1,22 @@
+- name: Create a mongo user
+  hosts: default
+  user: root
+  tasks:
+    - name: Install python3
+      ansible.builtin.apt:
+        name: python3
+        state: present
+        update_cache: true
+    - name: Install pymongo
+      ansible.builtin.apt:
+        name: python3-pymongo
+        state: present
+        update_cache: true
+    - name: Create a user, auth db is admin, have full access to db
+      community.mongodb.mongodb_user:
+        database: '{{ mongo_db }}'
+        name: '{{ mongo_user }}'
+        password: '{{ mongo_password }}'
+        roles:
+          - db: '{{ mongo_db }}'
+            role: dbOwner
